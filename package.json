@@ -1,0 +1,52 @@
+{
+	"name": "mednexus-api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.ts",
+	"scripts": {
+		"dev": "tsx watch src/server.ts",
+		"start": "tsx src/index.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "^11.5.1",
+			"onFail": "download"
+		}
+	},
+	"type": "module",
+	"devDependencies": {
+		"@types/compression": "^1.8.1",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/jsonwebtoken": "^9.0.10",
+		"tsx": "^4.22.4"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"protobufjs"
+		]
+	},
+	"dependencies": {
+		"@ai-sdk/google": "^3.0.80",
+		"ai": "^6.0.193",
+		"bcryptjs": "^3.0.3",
+		"compression": "^1.8.1",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"express-rate-limit": "^8.5.2",
+		"helmet": "^8.2.0",
+		"inngest": "^4.5.0",
+		"jsonwebtoken": "^9.0.3",
+		"mongoose": "^9.6.3",
+		"morgan": "^1.10.1",
+		"zod": "^4.4.3"
+	}
+}
