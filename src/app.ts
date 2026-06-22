@@ -1,3 +1,7 @@
+// Force IPv4 DNS resolution for MongoDB connection
+import dns from "node:dns";
+dns.setDefaultResultOrder("ipv4first");
+
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import compression from "compression";
@@ -8,9 +12,10 @@ import express, {
 	type Response,
 } from "express";
 import helmet from "helmet";
+import morgan from "morgan";
 import jwt from "jsonwebtoken";
 import { ZodError } from "zod";
-import { env } from "./config/env.js";
+import { env } from "./config/env.ts";
 import { isHttpError } from "./lib/http-error.ts";
 import { sendError, sendSuccess } from "./lib/response.ts";
 // import swaggerUi from "swagger-ui-express";
@@ -18,12 +23,13 @@ import fs from "fs";
 import path from "path";
 
 // Import your routes
-// import { healthRouter } from "./routes/health.ts";
+import { healthRouter } from "./routes/health.ts";
+import userRoutes from "./routes/user.ts";
+import { protect } from "./middleware/auth.ts";
 // import { summaryRouter } from "./routes/summary.ts";
 // import incomeRouter from "./routes/incomeRoute.ts";
 // import expenseRouter from "./routes/expenseRoute.ts";
 // import dashboardRouter from "./routes/dashboardRoute.ts";
-// import userRouter from "./routes/userRoute.ts";
 
 export function createApp() {
 	const app = express();
@@ -60,11 +66,16 @@ export function createApp() {
 	app.use(compression());
 
 	// 4. Body parsing
-	app.use(express.json({ limit: "10mb" })); // Prevent huge payloads
-	app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+	app.use(express.json()); // middleware to parse JSON bodies
+	app.use(express.urlencoded({ extended: true })); // middleware to parse URL-encoded bodies (e.g., form submissions)
 
 	// 5. Cookie parser
-	app.use(cookieParser());
+	app.use(cookieParser()); // middleware to parse cookies
+
+	// 6. Morgan for logging http requests (optional, can be replaced with a more advanced logger like Winston or Pino)
+	if (env.nodeEnv === "development") {
+		app.use(morgan("dev"));
+	}
 
 	const authLimiter = rateLimit({
 		windowMs: 45 * 60 * 1000, // 45 minutes
@@ -88,9 +99,8 @@ export function createApp() {
 		},
 	});
 
-	// Apply rate limiters to auth-related routes
 	app.use("/api/users/login", authLimiter);
-	app.use("/api/users/signup", authLimiter);
+	app.use("/api/users/register", authLimiter);
 	// app.use("/api/users/verify-email", authLimiter);
 	// app.use("/api/users/resend-verification-code", authLimiter);
 	app.use("/api/users/refresh", refreshLimiter);
@@ -98,7 +108,7 @@ export function createApp() {
 	// ====================== BASIC ROUTE ======================
 	app.get("/", (_req: Request, res: Response) => {
 		sendSuccess(res, 200, "Backend is healthy", {
-			service: "finance-pro-backend",
+			service: "medplus-api",
 			version: process.env.npm_package_version || "1.0.0",
 			status: "running",
 			port: app.get("port"),
@@ -107,8 +117,9 @@ export function createApp() {
 	});
 
 	// ====================== ROUTES ======================
-	// app.use("/api/health", healthRouter);
-	// app.use("/api/users", userRouter);
+	app.use("/api/health", healthRouter);
+	app.use("/api/users", userRoutes);
+	// app.use("/api/activity-logs", getActivityLogs);
 	// app.use("/api/summary", summaryRouter);
 	// app.use("/api/income", incomeRouter);
 	// app.use("/api/expenses", expenseRouter);
@@ -165,8 +176,8 @@ export function createApp() {
 			console.error("Unhandled Error:", error);
 			return sendError(res, 500, "Internal server error", {
 				...(env.nodeEnv === "development" &&
-				error instanceof Error &&
-				error.stack
+					error instanceof Error &&
+					error.stack
 					? { stack: error.stack }
 					: {}),
 			});

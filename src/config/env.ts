@@ -11,6 +11,7 @@ const envSchema = z.object({
 	HOST: z.string().optional(),
 	MONGODBURI: z.string().min(1, "MONGODBURI is required"),
 	MOGODBURI: z.string().optional(),
+	PROJECT_NAME: z.string().default(""),
 	JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 	JWT_REFRESH_SECRET: z.string().min(1).optional(),
 	JWT_ACCESS_EXPIRES_IN: z.string().default("60m"),
@@ -22,7 +23,7 @@ const envSchema = z.object({
 	FRONTEND_PROD_URL: z.string().url().optional(),
 	CORS_ORIGINS: z.string().optional(),
 	COOKIE_DOMAIN: z.string().optional(),
-	BREVO_API_KEY: z.string().optional(),
+	EDUNEXUS_BREVO_API_KEY: z.string().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -55,8 +56,9 @@ export const env = {
 	host:
 		envValues.HOST ??
 		(envValues.NODE_ENV === "production" ? "0.0.0.0" : "localhost"),
-	brevoApiKey: envValues.BREVO_API_KEY,
+	edunexusBrevoApiKey: envValues.EDUNEXUS_BREVO_API_KEY,
 	fromEmail: envValues.FROM_EMAIL,
+	projectName: envValues.PROJECT_NAME,
 	mongoDbUri: envValues.MONGODBURI ?? envValues.MOGODBURI ?? "",
 	jwtSecret: envValues.JWT_SECRET,
 	jwtRefreshSecret: envValues.JWT_REFRESH_SECRET ?? envValues.JWT_SECRET,

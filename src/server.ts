@@ -10,7 +10,7 @@ function handleServerError(error: NodeJS.ErrnoException) {
 		process.exit(1);
 	}
 
-	console.error(`Server failed to start: ${error.message}`);
+	console.error(`🚨 Server failed to start: ${error.message}`);
 	process.exit(1);
 }
 
@@ -20,10 +20,10 @@ async function startServer() {
 
 	while (!mongoStatus.connected && attemptsLeft > 0) {
 		console.warn(
-			`MongoDB connection failed: ${mongoStatus.message}. Retrying (${attemptsLeft} attempts left)...`,
+			`❌🚨❌ MongoDB connection failed: ${mongoStatus.message}. Retrying (${attemptsLeft} attempts left)...`,
 		);
 		if (mongoStatus.errorStack) {
-			console.error("MongoDB error stack:", mongoStatus.errorStack);
+			console.error("❌🚨❌ MongoDB error stack:", mongoStatus.errorStack);
 		}
 		await new Promise((r) => setTimeout(r, env.mongoRetryDelayMs));
 		attemptsLeft -= 1;
@@ -31,9 +31,9 @@ async function startServer() {
 	}
 
 	if (!mongoStatus.connected) {
-		console.error(`MongoDB connection failed: ${mongoStatus.message}`);
+		console.error(`❌🚨❌  MongoDB connection failed: ${mongoStatus.message}`);
 		if (mongoStatus.errorStack) {
-			console.error("MongoDB stack:", mongoStatus.errorStack);
+			console.error("❌🚨❌ MongoDB error stack:", mongoStatus.errorStack);
 		}
 		process.exit(1);
 	}
