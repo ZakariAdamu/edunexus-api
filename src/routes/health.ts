@@ -9,7 +9,7 @@ healthRouter.get("/", (_request: Request, response: Response) => {
 	const mongo = getMongoStatus();
 
 	return sendSuccess(response, 200, "Service is healthy", {
-		service: "edunexus-api",
+		service: env.projectName,
 		timestamp: new Date().toISOString(),
 		port: env.port,
 		host: env.host,

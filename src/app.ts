@@ -104,7 +104,7 @@ export function createApp() {
 	// ====================== BASIC ROUTE ======================
 	app.get("/", (_req: Request, res: Response) => {
 		sendSuccess(res, 200, "Backend is healthy", {
-			service: "medplus-api",
+			service: `${env.projectName} API`,
 			version: process.env.npm_package_version || "1.0.0",
 			status: "running",
 			port: app.get("port"),
