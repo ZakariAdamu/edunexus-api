@@ -51,7 +51,7 @@ async function startServer() {
 		const displayUrl =
 			env.nodeEnv === "production" ? `port ${port}` : `http://${host}:${port}`;
 		console.log(
-			`🟢 medplus server listening on ${displayUrl} 🚀🚀 Happy coding! 🚀🚀`,
+			`🟢 ${env.projectName} server listening on ${displayUrl} 🚀🚀 Happy coding! 🚀🚀`,
 		);
 	});
 

@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User, { IUser, userRoles } from "../models/user.ts";
+import type { IUser, UserRole } from "../models/user.ts";
+import User from "../models/user.ts";
 
 export interface AuthRequest extends Request {
 	user?: IUser;
@@ -44,7 +45,7 @@ export const protect = async (
 
 // Accept a list of allowed roles (e.g. 'admin', 'teacher')
 
-export const authorize = (roles: userRoles[]) => {
+export const authorize = (roles: UserRole[]) => {
 	return (req: AuthRequest, res: Response, next: NextFunction) => {
 		if (!req.user) {
 			return res.status(401).json({ message: "Unauthorized" });

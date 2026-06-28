@@ -11,19 +11,19 @@ const envSchema = z.object({
 	HOST: z.string().optional(),
 	MONGODBURI: z.string().min(1, "MONGODBURI is required"),
 	MOGODBURI: z.string().optional(),
-	PROJECT_NAME: z.string().default(""),
+	PROJECT_NAME: z.string(),
 	JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 	JWT_REFRESH_SECRET: z.string().min(1).optional(),
 	JWT_ACCESS_EXPIRES_IN: z.string().default("60m"),
 	JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
-	FROM_EMAIL: z.string().email("Invalid sender email").optional(),
+	FROM_EMAIL: z.string().email("Invalid sender email"),
 	MONGO_RETRIES: z.coerce.number().int().min(0).default(3),
 	MONGO_RETRY_DELAY_MS: z.coerce.number().int().min(0).default(2000),
 	FRONTEND_DEV_URL: z.string().url().optional(),
 	FRONTEND_PROD_URL: z.string().url().optional(),
 	CORS_ORIGINS: z.string().optional(),
 	COOKIE_DOMAIN: z.string().optional(),
-	EDUNEXUS_BREVO_API_KEY: z.string().optional(),
+	EDUNEXUS_BREVO_API_KEY: z.string(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

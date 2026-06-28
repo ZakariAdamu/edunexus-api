@@ -1,5 +1,5 @@
 {
-	"name": "mednexus-api",
+	"name": "edunexus-api",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.ts",
@@ -7,7 +7,25 @@
 		"dev": "tsx watch src/server.ts",
 		"build": "tsc",
 		"start": "tsx src/index.ts",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "husky",
+		"lint": "eslint . --ext .ts --fix",
+		"format": "prettier --write .",
+		"type-check": "tsc --noEmit"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"*.{json,md,yml,yaml}": [
+			"prettier --write"
+		]
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-conventional"
+		]
 	},
 	"keywords": [],
 	"author": "",
@@ -24,6 +42,10 @@
 	},
 	"type": "module",
 	"devDependencies": {
+		"@commitlint/cli": "^21.1.0",
+		"@commitlint/config-conventional": "^21.1.0",
+		"@commitlint/types": "^21.1.0",
+		"@eslint/js": "^10.0.1",
 		"@types/bcryptjs": "^3.0.0",
 		"@types/compression": "^1.8.1",
 		"@types/cookie-parser": "^1.4.10",
@@ -33,7 +55,10 @@
 		"@types/morgan": "^1.9.10",
 		"@types/node": "^26.0.0",
 		"@types/nodemailer": "^8.0.1",
-		"tsx": "^4.22.4"
+		"eslint": "^10.6.0",
+		"husky": "^9.1.7",
+		"tsx": "^4.22.4",
+		"typescript-eslint": "^8.62.0"
 	},
 	"dependencies": {
 		"@ai-sdk/google": "^3.0.80",
@@ -46,6 +71,7 @@
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"express-rate-limit": "^8.5.2",
+		"globals": "^17.7.0",
 		"helmet": "^8.2.0",
 		"inngest": "^4.5.0",
 		"jsonwebtoken": "^9.0.3",

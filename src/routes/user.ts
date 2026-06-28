@@ -1,6 +1,5 @@
 import express from "express";
 import { loginUser, logoutUser, registerUser, resendVerificationCode, verifyEmail } from "../controllers/user.ts";
-import { protect } from "../middleware/auth.ts";
 
 const userRoutes = express.Router();
 

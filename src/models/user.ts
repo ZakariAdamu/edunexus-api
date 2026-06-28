@@ -1,5 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import type { Document} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+
 
 export enum UserRole {
 	ADMIN = "admin",
@@ -8,13 +10,13 @@ export enum UserRole {
 	PARENT = "parent",
 }
 
-export type userRoles = "admin" | "teacher" | "student" | "parent";
+// export type userRoles = "admin" | "teacher" | "student" | "parent";
 
 export interface IUser extends Document {
 	name: string;
 	email: string;
 	password: string;
-	role: userRoles;
+	role: UserRole;
 	isActive?: boolean;
 	studentClass?: string;
 	teacherSubjects?: string[] | null;
@@ -32,7 +34,7 @@ const UserSchema: Schema<IUser> = new Schema(
 	{
 		name: { type: String, required: true },
 		email: { type: String, required: true, unique: true },
-		password: { type: String, required: true },
+		password: { type: String, required: true, select: false },
 		role: {
 			type: String,
 			enum: Object.values(UserRole),
@@ -57,15 +59,19 @@ const UserSchema: Schema<IUser> = new Schema(
 		},
 		verificationCode: {
 			type: String,
+			select: false,
 		},
 		verificationCodeExpires: {
 			type: Date,
+			select: false,
 		},
 		passwordResetToken: {
 			type: String,
+			select: false,
 		},
 		passwordResetExpires: {
 			type: Date,
+			select: false,
 		},
 	},
 	{

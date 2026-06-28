@@ -18,14 +18,10 @@ import { ZodError } from "zod";
 import { env } from "./config/env.ts";
 import { isHttpError } from "./lib/http-error.ts";
 import { sendError, sendSuccess } from "./lib/response.ts";
-// import swaggerUi from "swagger-ui-express";
-import fs from "fs";
-import path from "path";
 
 // Import your routes
 import { healthRouter } from "./routes/health.ts";
 import userRoutes from "./routes/user.ts";
-import { protect } from "./middleware/auth.ts";
 // import { summaryRouter } from "./routes/summary.ts";
 // import incomeRouter from "./routes/incomeRoute.ts";
 // import expenseRouter from "./routes/expenseRoute.ts";
@@ -66,8 +62,8 @@ export function createApp() {
 	app.use(compression());
 
 	// 4. Body parsing
-	app.use(express.json()); // middleware to parse JSON bodies
-	app.use(express.urlencoded({ extended: true })); // middleware to parse URL-encoded bodies (e.g., form submissions)
+	app.use(express.json({ limit: "1mb" })); // middleware to parse JSON bodies
+	app.use(express.urlencoded({ extended: true, limit: "1mb" })); // middleware to parse URL-encoded bodies (e.g., form submissions)
 
 	// 5. Cookie parser
 	app.use(cookieParser()); // middleware to parse cookies

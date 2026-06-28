@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { sendError, sendSuccess } from "../lib/response.ts";
-import User from "../models/user.ts";
-import bcrypt from "bcryptjs";
+import User, { UserRole } from "../models/user.ts";
+import type { AuthRequest } from "../middleware/auth.ts";
 import {
 	clearAuthCookies,
 	createAccessToken,
@@ -21,7 +21,12 @@ export const signupSchema = z
 		name: z.string().trim().min(1, "Name is required"),
 		email: z.string().trim().email("Email is not valid"),
 		password: z.string().min(8, "Password must be at least 8 characters"),
-		confirmPassword: z.string().min(8, "Confirm your password"),
+    confirmPassword: z.string().min(8, "Confirm your password"),
+    role: z.enum(UserRole),
+    studentClass: z.string().optional(),
+    teacherSubjects: z.array(z.string()).optional(),
+    isActive: z.boolean().optional(),
+
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: "Passwords do not match",
@@ -216,9 +221,9 @@ async function sendVerificationEmail(email: string, code: string) {
 
 // 1. ===================== USER REGISTER / SIGNUP ======================
 export const registerUser = async (
-	req: Request,
+	req: AuthRequest,
 	res: Response,
-): Promise<void> => {
+) => {
 	// Verify transporter is ready before processing signup requests to catch any SMTP issues early
   transporter.verify((err) => {
     if (err) {
@@ -227,96 +232,89 @@ export const registerUser = async (
       console.log("SMTP ready");
     }
   });
-	try {
-		const {
-			name,
-			email,
-			password,
-			role,
-			studentClass,
-			teacherSubjects,
-			isActive,
-		} = req.body;
+try {
+		const validated = signupSchema.parse(req.body);
+		console.log("A - Signup request received for email:", validated.email);
+		const existingUser = await User.findOne({ email: validated.email });
+		console.log(
+			"B - Existing user check completed:",
+			existingUser ? "User found" : "No user found",
+		);
 
-		// check if user already exists
-		const existingUser = await User.findOne({ email });
 		if (existingUser) {
-			res.status(400).json({ message: "User already exists" });
-			return;
+			return sendError(res, 409, "Email already in use");
 		}
 
 		// generate 4-digit code
-    const code = generateVerificationCode()
+		const code = generateVerificationCode();
 
-    const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+		const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
 
 		// create new user
-		const newUser = await new User({
-			name,
-			email,
-			password,
-			role,
-			studentClass,
-      verificationCode: code,
-      verificationCodeExpires: expiresAt,
-			teacherSubjects,
-			isActive,
-    });
+		const user = await new User({
+			name: validated.name,
+			email: validated.email,
+			password: validated.password,
+			role: validated.role,
+			studentClass: validated.studentClass,
+			verificationCode: code,
+			verificationCodeExpires: expiresAt,
+			teacherSubjects: validated.teacherSubjects,
+			isActive: validated.isActive,
+		});
     
-    await newUser.save();
+    await user.save();
     
-    console.log("New user created:", newUser);
+    console.log("New user created:", user);
 
 		    try {
-      await sendVerificationEmail(newUser.email, code);
+      await sendVerificationEmail(user.email, code);
       console.log("E - Verification email sent successfully");
     } catch (emailError) {
-      await User.deleteOne({ _id: newUser._id });
+      await User.deleteOne({ _id: user._id });
       console.error("F - Error sending verification email:", emailError);
       throw emailError;
     }
 
-res.status(201).json({
-			message: `Welcome to ${env.projectName}, please verify your email`,
-      user: {
-				id: newUser._id,
-				name: newUser.name,
-				email: newUser.email,
-				role: newUser.role,
-				studentClass: newUser.studentClass,
-				teacherSubjects: newUser.teacherSubjects,
-				isActive: newUser.isActive,
-			},
-    });
-
 		// create an activity log for user registration/signup
-		const creatorId = (req as any).user?._id || newUser._id;
+		const creatorId = req.user?._id || user._id;
 		const activityLogData = {
 			userId: creatorId,
 			action: ActivityAction.CREATE_USER,
-			description: (req as any).user?._id
-				? `Created user ${newUser.name} with email ${newUser.email}`
-				: `User ${newUser.name} with email ${newUser.email} signed up for ${env.projectName}`,
+			description: req.user?._id
+				? `Created user ${user.name} with email ${user.email}`
+				: `User ${user.name} with email ${user.email} signed up for ${env.projectName}`,
 			resourceType: "User",
-			resourceId: newUser._id.toString(),
+			resourceId: user._id.toString(),
 			metadata: {
-				name: newUser.name,
-				email: newUser.email,
-				role: newUser.role,
+				name: user.name,
+				email: user.email,
+				role: user.role,
 				ip: req.ip,
 			},
 		};
 
 		await logActivity(activityLogData);
-
 		console.log("Activity log created on signup/user creation:", JSON.stringify(activityLogData, null, 2));
+
+		return sendSuccess(res, 201, `User signed up. Please verify your email.`, {
+      user: {
+				id: user._id,
+				name: user.name,
+				email: user.email,
+				role: user.role,
+				studentClass: user.studentClass,
+				teacherSubjects: user.teacherSubjects,
+				isActive: user.isActive,
+			},
+    });
 	} catch (error: unknown) {
 		if (error instanceof z.ZodError) {
-			sendError(res, 400, "Validation error", {
+			return sendError(res, 400, "Validation error", {
 				errors: mapZodIssues(error),
 			});
 		}
-		sendError(
+		return sendError(
 			res,
 			500,
 			error instanceof Error ? error.message : "Server error",
@@ -422,15 +420,15 @@ export async function loginUser(req: Request, res: Response) {
 		const user = await User.findOne({ email }).select("+password");
 
 		if (!user || !user.password) {
-			return sendError(res, 401, "Invalid email or password");
+			return sendError(res, 400, "User not found");
 		}
 		if (!user.isVerified) {
 			return sendError(res, 403, "Please verify your email before logging in");
 		}
 
-		const passwordMatches = await bcrypt.compare(password, user.password);
+		const passwordMatches = await user.matchPassword(password);
 		if (!passwordMatches) {
-			return sendError(res, 401, "Invalid email or password");
+			return sendError(res, 401, "Invalid credentials");
 		}
 
 		const tokens = authCookieResponse(user._id.toString());

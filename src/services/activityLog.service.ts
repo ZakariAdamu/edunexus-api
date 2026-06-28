@@ -1,5 +1,6 @@
-import { Types } from "mongoose";
-import ActivityLog, { ActivityAction } from "../models/activityLogs.ts";
+import type { Types } from "mongoose";
+import type { ActivityAction } from "../models/activityLogs.ts";
+import ActivityLog from "../models/activityLogs.ts";
 
 interface LogActivityParams {
 	userId: Types.ObjectId;
@@ -30,11 +31,7 @@ export const logActivity = async ({
 			metadata,
 		});
 		if (process.env.NODE_ENV === "development") {
-			console.log("Activity Log Created:");
-			console.dir(activityLog.toObject(), {
-				depth: null,
-				colors: true,
-			});
+			console.log("Activity Log Created:", activityLog.toObject());
 		}
 	} catch (error) {
 		console.error("Activity logging failed:", error);
