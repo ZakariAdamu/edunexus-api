@@ -1,10 +1,12 @@
-FROM node:22
+FROM node:24.18.0
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN pnpm install
+RUN npm install -g pnpm@11.5.1
+
+RUN HUSKY=0 pnpm install --frozen-lockfile
 
 COPY . .
 
@@ -12,4 +14,4 @@ RUN pnpm build
 
 EXPOSE 5000
 
-CMD ["pnpm", "start"]
+CMD ["node", "dist/server.js"]
