@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "rewriteRelativeImportExtensions": true,
+    "types": [
+      "node",
+      "express",
+      "cors",
+      "cookie-parser",
+      "compression",
+      "bcryptjs",
+      "jsonwebtoken",
+      "dotenv",
+      "helmet"
+    ]
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

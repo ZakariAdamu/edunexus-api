@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { env, hasMongoDbUri } from "../config/env.js";
+import { env, hasMongoDbUri } from "../config/env.ts";
 
 type MongoStatus = {
 	configured: boolean;

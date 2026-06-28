@@ -1,0 +1,6 @@
+echo "🔍 Running pre-commit checks..."
+
+# Run linting + formatting on staged files
+pnpm lint
+
+echo "✅ Pre-commit passed!"

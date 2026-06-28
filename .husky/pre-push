@@ -1,0 +1,16 @@
+echo "🚀 Running pre-push checks..."
+
+# 1. Type checking
+echo "→ Type checking..."
+pnpm run type-check
+pnpm run lint
+
+# 2. Full build
+echo "→ Building project..."
+pnpm run build
+
+# 3. Optional: Run tests (uncomment if you have tests)
+# echo "→ Running tests..."
+# npm test
+
+echo "✅ All checks passed! Pushing..."
