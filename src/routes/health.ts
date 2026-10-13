@@ -9,13 +9,13 @@ healthRouter.get("/", (_request: Request, response: Response) => {
 	const mongo = getMongoStatus();
 
 	return sendSuccess(response, 200, "Service is healthy", {
-		service: env.projectName,
+		service: `${env.projectName} API`,
 		timestamp: new Date().toISOString(),
 		port: env.port,
 		host: env.host,
 		database: {
 			provider: "mongodb",
-			...mongo,
+			status: mongo.connected,
 		},
 	});
 });
