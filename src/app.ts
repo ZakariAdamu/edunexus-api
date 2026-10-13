@@ -22,6 +22,7 @@ import { sendError, sendSuccess } from "./lib/response.ts";
 // Import your routes
 import { healthRouter } from "./routes/health.ts";
 import userRoutes from "./routes/user.ts";
+import { logsRouter } from "./routes/activityLogs.ts";
 // import { summaryRouter } from "./routes/summary.ts";
 // import incomeRouter from "./routes/incomeRoute.ts";
 // import expenseRouter from "./routes/expenseRoute.ts";
@@ -95,10 +96,11 @@ export function createApp() {
 		},
 	});
 
+	// import user routes
 	app.use("/api/users/login", authLimiter);
 	app.use("/api/users/register", authLimiter);
-	// app.use("/api/users/verify-email", authLimiter);
-	// app.use("/api/users/resend-verification-code", authLimiter);
+	app.use("/api/users/verify-email", authLimiter);
+	app.use("/api/users/resend-verification-code", authLimiter);
 	app.use("/api/users/refresh", refreshLimiter);
 
 	// ====================== BASIC ROUTE ======================
@@ -112,10 +114,11 @@ export function createApp() {
 		});
 	});
 
-	// ====================== ROUTES ======================
+	// ====================== END POINTS REGISTER ======================
 	app.use("/api/health", healthRouter);
 	app.use("/api/users", userRoutes);
-	// app.use("/api/activity-logs", getActivityLogs);
+	app.use("/api/activity-logs", logsRouter);
+	
 	// app.use("/api/summary", summaryRouter);
 	// app.use("/api/income", incomeRouter);
 	// app.use("/api/expenses", expenseRouter);
@@ -139,7 +142,7 @@ export function createApp() {
 	// 	console.warn("Could not mount API docs:", err);
 	// }
 
-	// ====================== 404 HANDLER ======================
+	// ====================== Catch-all 404 HANDLER ======================
 	app.use((_req: Request, res: Response) => {
 		sendError(res, 404, "Route not found");
 	});

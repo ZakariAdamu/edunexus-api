@@ -434,8 +434,22 @@ export async function loginUser(req: Request, res: Response) {
 		const tokens = authCookieResponse(user._id.toString());
 		setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
 
+		await logActivity({
+			userId: user._id,
+			action: ActivityAction.LOGIN,
+			description: `User ${user.name} with email ${user.email} logged in`,
+			resourceType: "User",
+			resourceId: user._id.toString(),
+			metadata: {
+				name: user.name,
+				email: user.email,
+				role: user.role,
+				ip: req.ip,
+			},
+		});
+
 		return sendSuccess(res, 200, "Logged in successfully", {
-			user: { id: user._id.toString(), name: user.name, email: user.email },
+			user,
 			accessToken: tokens.accessToken,
 		});
 	} catch (error: unknown) {
@@ -447,9 +461,23 @@ export async function loginUser(req: Request, res: Response) {
 	}
 }
 
-// 3. ============== User Logout ===================
+// 5. ============== User Logout ===================
+export async function logoutUser(req: AuthRequest, res: Response) {
+	try {
+		const user = req.user;
+		if (!user) {
+			return sendError(res, 401, "Unauthorized");
+		}
 
-export async function logoutUser(req: Request, res: Response) {
-	clearAuthCookies(res);
-	return sendSuccess(res, 200, "Logged out successfully", null)
+		console.log(`User logged out: ${user.name} <${user.email}>`);
+
+		clearAuthCookies(res);
+		return sendSuccess(res, 200, "Logged out successfully", user);
+	} catch (error: unknown) {
+		return sendError(
+			res,
+			500,
+			error instanceof Error ? error.message : "Server error",
+		);
+	}
 }

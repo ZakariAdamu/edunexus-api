@@ -15,8 +15,8 @@ export const protect = async (
 	let authToken;
 
 	// Check for authToken in cookies
-	if (req.cookies && (req.cookies.accessToken || req.cookies.token)) {
-		authToken = req.cookies.accessToken || req.cookies.token;
+	if (req.cookies && (req.cookies.accessToken || req.cookies.jwtToken)) {
+		authToken = req.cookies.accessToken || req.cookies.jwtToken;
 	}
 
 	if (authToken) {
@@ -48,7 +48,7 @@ export const protect = async (
 export const authorize = (roles: UserRole[]) => {
 	return (req: AuthRequest, res: Response, next: NextFunction) => {
 		if (!req.user) {
-			return res.status(401).json({ message: "Unauthorized" });
+			return res.status(401).json({ message: "Unauthorized, user not found" });
 		}
 
 		// Check if the user's role is in the allowed roles / listed in the roles array
@@ -61,4 +61,3 @@ export const authorize = (roles: UserRole[]) => {
 		next();
 	};
 };
-// Example usage in a route

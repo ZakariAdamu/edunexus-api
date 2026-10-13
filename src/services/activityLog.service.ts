@@ -2,13 +2,16 @@ import type { Types } from "mongoose";
 import type { ActivityAction } from "../models/activityLogs.ts";
 import ActivityLog from "../models/activityLogs.ts";
 
+// ====================== LOG ACTIVITY SERVICE ======================
+// This service is used to log activities in the database.
+// Some applications may have this activityLog.service.ts file in the utils folder.
 interface LogActivityParams {
 	userId: Types.ObjectId;
 	action: ActivityAction;
 	description: string;
 
 	resourceType?: string;
-	resourceId?: string;
+	resourceId?: string; 
 
 	metadata?: Record<string, unknown>;
 }
@@ -34,6 +37,6 @@ export const logActivity = async ({
 			console.log("Activity Log Created:", activityLog.toObject());
 		}
 	} catch (error) {
-		console.error("Activity logging failed:", error);
+		console.error("Failed to log activity:", error);
 	}
 };
