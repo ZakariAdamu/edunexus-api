@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import { sendError, sendSuccess } from "../lib/response.ts";
-import User from "../models/user.ts";
 import type { AuthRequest } from "../middleware/auth.ts";
 import {
 	clearAuthCookies,
@@ -16,6 +15,7 @@ import {
 	transporter,
 } from "../services/email.service.ts";
 import { env } from "../config/env.ts";
+import User from "../models/user.ts";
 import {
 	loginSchema,
 	resendCodeSchema,

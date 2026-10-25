@@ -23,6 +23,7 @@ import { sendError, sendSuccess } from "./lib/response.ts";
 import { healthRouter } from "./routes/health.ts";
 import userRoutes from "./routes/user.ts";
 import { logsRouter } from "./routes/activityLogs.ts";
+import academicYearRoutes from "./routes/academicYear.ts";
 // import { summaryRouter } from "./routes/summary.ts";
 // import incomeRouter from "./routes/incomeRoute.ts";
 // import expenseRouter from "./routes/expenseRoute.ts";
@@ -136,6 +137,7 @@ export function createApp() {
 	app.use("/api/users", userRoutes);
 	app.use("/api/activity-logs", logsRouter);
 	app.use("/api/users/:id", userRoutes);
+	app.use("/api/academic-years", academicYearRoutes);
 
 	// app.use("/api/summary", summaryRouter);
 	// app.use("/api/income", incomeRouter);
