@@ -1,14 +1,11 @@
 import express from "express";
 import {
 	createAcademicYear,
+	deleteAcademicYear,
 	getAcademicYearById,
 	getAcademicYears,
 	getCurrentAcademicYear,
 	updateAcademicYear,
-	// getAcademicYears,
-	// getAcademicYearById,
-	// updateAcademicYear,
-	// deleteAcademicYear,
 } from "../controllers/academicYear.ts";
 import { authorize, protect } from "../middleware/auth.ts";
 import { UserRole } from "../models/user.ts";
@@ -40,6 +37,11 @@ academicYearRoutes.put(
 );
 
 // Delete a specific academic year by ID
-// academicYearRoutes.delete("/:id", deleteAcademicYear);
+academicYearRoutes.delete(
+	"/:id",
+	protect,
+	authorize([UserRole.ADMIN]),
+	deleteAcademicYear,
+);
 
 export default academicYearRoutes;
