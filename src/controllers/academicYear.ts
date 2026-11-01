@@ -1,5 +1,4 @@
 import type { Response } from "express";
-import type { FilterQuery } from "mongoose";
 import * as z from "zod";
 
 import { sendError, sendSuccess } from "../lib/response.ts";
@@ -177,7 +176,7 @@ export const getAcademicYears = async (req: AuthRequest, res: Response) => {
 		const limit = parseInt(req.query.limit as string) || 10;
 		const search = (req.query.search as string) || "";
 
-		const query: FilterQuery<IAcademicYear> = {};
+		const query: Record<string, unknown> = {};
 		if (search) {
 			query.name = { $regex: search, $options: "i" };
 		}

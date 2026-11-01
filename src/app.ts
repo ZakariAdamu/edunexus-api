@@ -24,10 +24,10 @@ import { healthRouter } from "./routes/health.ts";
 import userRoutes from "./routes/user.ts";
 import { logsRouter } from "./routes/activityLogs.ts";
 import academicYearRoutes from "./routes/academicYear.ts";
-// import { summaryRouter } from "./routes/summary.ts";
-// import incomeRouter from "./routes/incomeRoute.ts";
-// import expenseRouter from "./routes/expenseRoute.ts";
-// import dashboardRouter from "./routes/dashboardRoute.ts";
+import { classRoutes } from "./routes/class.ts";
+import { subjectRoutes } from "./routes/subject.ts";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./inngest/index.ts";
 
 export function createApp() {
 	const app = express();
@@ -113,6 +113,9 @@ export function createApp() {
 		},
 	});
 
+	// Set up the "/api/inngest" (recommended) routes with the serve handler
+	app.use("/api/inngest", serve({ client: inngest, functions }));
+
 	// user routes with usage limit controls
 	app.use("/api/users/login", loginLimiter);
 	app.use("/api/users/register", registrationLimiter);
@@ -138,6 +141,8 @@ export function createApp() {
 	app.use("/api/activity-logs", logsRouter);
 	app.use("/api/users/:id", userRoutes);
 	app.use("/api/academic-years", academicYearRoutes);
+	app.use("/api/classes", classRoutes);
+	app.use("/api/subjects", subjectRoutes);
 
 	// app.use("/api/summary", summaryRouter);
 	// app.use("/api/income", incomeRouter);
