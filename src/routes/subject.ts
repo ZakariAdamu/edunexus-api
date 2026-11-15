@@ -5,10 +5,6 @@ import {
 	getAllSubjects,
 	getSubjectById,
 	updateSubject,
-	// deleteSubject,
-	// getAllSubjects,
-	// getSubjectById,
-	// updateSubject,
 } from "../controllers/subject.ts";
 import { authorize, protect } from "../middleware/auth.ts";
 import { UserRole } from "../models/user.ts";

@@ -24,7 +24,7 @@ const classSchema = new Schema<IClass>(
 		},
 		classTeacher: {
 			type: mongoose.Types.ObjectId,
-			ref: "Teacher",
+			ref: "User",
 			required: false,
 			default: null,
 		},

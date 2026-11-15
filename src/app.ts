@@ -27,7 +27,9 @@ import academicYearRoutes from "./routes/academicYear.ts";
 import { classRoutes } from "./routes/class.ts";
 import { subjectRoutes } from "./routes/subject.ts";
 import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest/index.ts";
+import { inngest } from "./inngest/index.ts";
+import { generateTimeTable } from "./inngest/functions.ts";
+import { timetableRoutes } from "./routes/timetable.ts";
 
 export function createApp() {
 	const app = express();
@@ -113,9 +115,6 @@ export function createApp() {
 		},
 	});
 
-	// Set up the "/api/inngest" (recommended) routes with the serve handler
-	app.use("/api/inngest", serve({ client: inngest, functions }));
-
 	// user routes with usage limit controls
 	app.use("/api/users/login", loginLimiter);
 	app.use("/api/users/register", registrationLimiter);
@@ -142,15 +141,14 @@ export function createApp() {
 	app.use("/api/users/:id", userRoutes);
 	app.use("/api/academic-years", academicYearRoutes);
 	app.use("/api/classes", classRoutes);
-	app.use("/api/subjects", subjectRoutes);
+	app.use("/api/subjects", subjectRoutes); 
+	app.use("/api/timetables", timetableRoutes);
 
-	// app.use("/api/summary", summaryRouter);
-	// app.use("/api/income", incomeRouter);
-	// app.use("/api/expenses", expenseRouter);
-	// app.use("/api/dashboard", dashboardRouter);
-
-	// Optional: Keep /dashboard if you serve some HTML/views
-	// app.use("/dashboard", dashboardRouter);
+	// Set up the "/api/inngest" (recommended) routes with the serve handler
+	app.use(
+		"/api/inngest",
+		serve({ client: inngest, functions: [generateTimeTable] }),
+	);
 
 	// ====================== API Docs (Swagger UI) ======================
 	// try {

@@ -28,6 +28,7 @@ export enum ActivityAction {
 	CREATE_EXAM = "CREATE_EXAM",
 	UPDATE_EXAM = "UPDATE_EXAM",
 	DELETE_EXAM = "DELETE_EXAM",
+	GENERATE_TIMETABLE = "GENERATE_TIMETABLE",
 }
 
 export interface IActivityLog extends Document {

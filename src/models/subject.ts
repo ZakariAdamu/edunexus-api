@@ -4,7 +4,7 @@ import mongoose, { Schema } from "mongoose";
 export interface ISubject extends Document {
 	name: string;
 	code: string; // "MATH101", "ENG202", etc.
-	teacher?: mongoose.Types.ObjectId[]; // Reference to the Teacher model
+	teacher?: mongoose.Types.ObjectId[]; // Array of references to the User model (teachers) who teach this subject
 	isActive: boolean; // Indicates if the subject is currently active
 }
 
@@ -23,7 +23,7 @@ const subjectSchema = new Schema<ISubject>(
 		},
 		teacher: {
 			type: [mongoose.Types.ObjectId],
-			ref: "Teacher",
+			ref: "User",
 			required: false,
 		},
 		isActive: {

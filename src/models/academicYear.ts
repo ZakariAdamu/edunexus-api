@@ -4,8 +4,8 @@ import mongoose, { Schema } from "mongoose";
 export interface IAcademicYear extends Document {
 	name: string; // e.g., "2023-2024"
 	fromYear: Date; // e.g., "2023-09-01"
-    toYear: Date; // e.g., "2024-06-30"
-    isCurrent: boolean; // Indicates if this is the current academic year
+	toYear: Date; // e.g., "2024-06-30"
+	isCurrent: boolean; // Indicates if this is the current academic year
 }
 
 const academicYearSchema = new Schema<IAcademicYear>(
@@ -31,7 +31,15 @@ const academicYearSchema = new Schema<IAcademicYear>(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
-export default mongoose.model<IAcademicYear>("AcademicYear", academicYearSchema);
+academicYearSchema.index(
+	{ isCurrent: 1 },
+	{ unique: true, partialFilterExpression: { isCurrent: true } },
+);
+
+export default mongoose.model<IAcademicYear>(
+	"AcademicYear",
+	academicYearSchema,
+);
