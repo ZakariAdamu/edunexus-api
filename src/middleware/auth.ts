@@ -1,46 +1,48 @@
 import { type Request, type Response, type NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import type { IUser, UserRole } from "../models/user.ts";
 import User from "../models/user.ts";
+import { ACCESS_TOKEN_COOKIE, extractCookieToken, LEGACY_TOKEN_COOKIE, verifyToken } from "../utils/jwt.ts";
 
 export interface AuthRequest extends Request {
 	user?: IUser;
 }
 
+
 export const protect = async (
-	req: AuthRequest,
-	res: Response,
-	next: NextFunction,
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
 ) => {
-	let authToken;
+  const authToken = req.cookies
+    ? extractCookieToken(req.cookies, ACCESS_TOKEN_COOKIE) ??
+      extractCookieToken(req.cookies, LEGACY_TOKEN_COOKIE)
+    : null;
 
-	// Check for authToken in cookies
-	if (req.cookies && (req.cookies.accessToken || req.cookies.jwtToken)) {
-		authToken = req.cookies.accessToken || req.cookies.jwtToken;
-	}
+  if (!authToken) {
+    return res.status(401).json({
+      message: "Unauthorized, no token",
+    });
+  }
 
-	if (authToken) {
-		try {
-			const decoded = jwt.verify(
-				authToken,
-				process.env.JWT_SECRET as string,
-			) as { sub: string };
+  try {
+    const decoded = verifyToken(authToken, "access");
 
-			const user = await User.findById(decoded.sub).select("-password");
-			if (!user) {
-				return res.status(401).json({ message: "Unauthorized" });
-			}
+    const user = await User.findById(decoded.sub).select("-password");
 
-			req.user = user;
-			// Call next() to proceed to the next middleware or route handler
-			next();
-		} catch (error) {
-			console.error("JWT verification failed:", error);
-			return res.status(401).json({ message: "Unauthorized" });
-		}
-	} else {
-		return res.status(401).json({ message: "Unauthorized, no token" });
-	}
+    if (!user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    req.user = user;
+
+    return next();
+  } catch {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
 };
 
 // Accept a list of allowed roles (e.g. 'admin', 'teacher')

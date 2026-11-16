@@ -10,7 +10,7 @@ export type AuthTokenPayload = JwtPayload & {
 // Cookie names for authentication tokens
 export const ACCESS_TOKEN_COOKIE = "accessToken";
 export const REFRESH_TOKEN_COOKIE = "refreshToken";
-export const LEGACY_TOKEN_COOKIE = "token";
+export const LEGACY_TOKEN_COOKIE = "jwtToken";
 
 // ============= TOKEN CREATION & VERIFICATION =============
 const JWT_ALGORITHM = "HS256" as const;
@@ -41,6 +41,15 @@ export function createRefreshToken(userId: string) {
 		env.jwtRefreshExpiresIn,
 		"refresh",
 	);
+}
+
+
+// Create both authentication tokens for a user.
+export function createAuthTokens(userId: string) {
+  return {
+    accessToken: createAccessToken(userId),
+    refreshToken: createRefreshToken(userId),
+  };
 }
 
 // Creates a short-lived verification token (1 hour)

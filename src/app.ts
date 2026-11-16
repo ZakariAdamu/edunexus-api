@@ -23,10 +23,13 @@ import { sendError, sendSuccess } from "./lib/response.ts";
 import { healthRouter } from "./routes/health.ts";
 import userRoutes from "./routes/user.ts";
 import { logsRouter } from "./routes/activityLogs.ts";
-// import { summaryRouter } from "./routes/summary.ts";
-// import incomeRouter from "./routes/incomeRoute.ts";
-// import expenseRouter from "./routes/expenseRoute.ts";
-// import dashboardRouter from "./routes/dashboardRoute.ts";
+import academicYearRoutes from "./routes/academicYear.ts";
+import { classRoutes } from "./routes/class.ts";
+import { subjectRoutes } from "./routes/subject.ts";
+import { serve } from "inngest/express";
+import { inngest } from "./inngest/index.ts";
+import { generateTimeTable } from "./inngest/functions.ts";
+import { timetableRoutes } from "./routes/timetable.ts";
 
 export function createApp() {
 	const app = express();
@@ -40,6 +43,9 @@ export function createApp() {
 	// 1. Security headers (Very Important)
 	app.use(helmet());
 
+	// You configure allowed origins and headers through corsOptions.
+	// For production, make sure env.allowedOrigins contains the exact
+	// frontend origin or origins that should be permitted.
 	const corsOrigin =
 		env.allowedOrigins.length > 0
 			? env.allowedOrigins
@@ -74,34 +80,47 @@ export function createApp() {
 		app.use(morgan("dev"));
 	}
 
-	const authLimiter = rateLimit({
-		windowMs: 45 * 60 * 1000, // 45 minutes
-		max: 15, // Limit each IP to 15 requests per windowMs
+	// rate-limit organization
+
+	const loginLimiter = rateLimit({
+		windowMs: 10 * 60 * 1000,
+		max: 5,
 		standardHeaders: true,
 		legacyHeaders: false,
 		message: {
-			status: "error",
-			message: "Too many auth attempts, please try again later.",
+			success: false,
+			message: "Too many login attempts. Please try again later.",
 		},
 	});
 
-	const refreshLimiter = rateLimit({
-		windowMs: 45 * 60 * 1000,
-		max: 50,
+	const registrationLimiter = rateLimit({
+		windowMs: 10 * 60 * 1000,
+		max: 5,
 		standardHeaders: true,
 		legacyHeaders: false,
 		message: {
-			status: "error",
-			message: "Too many refresh attempts, please try again later.",
+			success: false,
+			message: "Too many registration attempts. Please try again later.",
 		},
 	});
 
-	// import user routes
-	app.use("/api/users/login", authLimiter);
-	app.use("/api/users/register", authLimiter);
-	app.use("/api/users/verify-email", authLimiter);
-	app.use("/api/users/resend-verification-code", authLimiter);
-	app.use("/api/users/refresh", refreshLimiter);
+	const verificationLimiter = rateLimit({
+		windowMs: 10 * 60 * 1000,
+		max: 5,
+		standardHeaders: true,
+		legacyHeaders: false,
+		message: {
+			success: false,
+			message: "Too many verification attempts. Please try again later.",
+		},
+	});
+
+	// user routes with usage limit controls
+	app.use("/api/users/login", loginLimiter);
+	app.use("/api/users/register", registrationLimiter);
+	app.use("/api/users/verify-email", verificationLimiter);
+	app.use("/api/users/resend-verification-code", verificationLimiter);
+	app.use("/api/users/refresh", registrationLimiter);
 
 	// ====================== BASIC ROUTE ======================
 	app.get("/", (_req: Request, res: Response) => {
@@ -114,18 +133,22 @@ export function createApp() {
 		});
 	});
 
-	// ====================== END POINTS REGISTER ======================
+	// ====================== API ROUTES ======================
+	// Register additional routers here as they become available.
 	app.use("/api/health", healthRouter);
 	app.use("/api/users", userRoutes);
 	app.use("/api/activity-logs", logsRouter);
-	
-	// app.use("/api/summary", summaryRouter);
-	// app.use("/api/income", incomeRouter);
-	// app.use("/api/expenses", expenseRouter);
-	// app.use("/api/dashboard", dashboardRouter);
+	app.use("/api/users/:id", userRoutes);
+	app.use("/api/academic-years", academicYearRoutes);
+	app.use("/api/classes", classRoutes);
+	app.use("/api/subjects", subjectRoutes); 
+	app.use("/api/timetables", timetableRoutes);
 
-	// Optional: Keep /dashboard if you serve some HTML/views
-	// app.use("/dashboard", dashboardRouter);
+	// Set up the "/api/inngest" (recommended) routes with the serve handler
+	app.use(
+		"/api/inngest",
+		serve({ client: inngest, functions: [generateTimeTable] }),
+	);
 
 	// ====================== API Docs (Swagger UI) ======================
 	// try {
@@ -175,8 +198,8 @@ export function createApp() {
 			console.error("Unhandled Error:", error);
 			return sendError(res, 500, "Internal server error", {
 				...(env.nodeEnv === "development" &&
-					error instanceof Error &&
-					error.stack
+				error instanceof Error &&
+				error.stack
 					? { stack: error.stack }
 					: {}),
 			});

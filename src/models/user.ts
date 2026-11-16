@@ -1,7 +1,6 @@
-import type { Document} from "mongoose";
+import type { Document } from "mongoose";
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-
 
 export enum UserRole {
 	ADMIN = "admin",
@@ -18,8 +17,8 @@ export interface IUser extends Document {
 	password: string;
 	role: UserRole;
 	isActive?: boolean;
-	studentClass?: string;
-	teacherSubjects?: string[] | null;
+	studentClass?: mongoose.Types.ObjectId;
+	teacherSubjects?: mongoose.Types.ObjectId[];
 	isVerified?: boolean;
 	matchPassword: (enteredPassword: string) => Promise<boolean>;
 	verificationCode: string | null;
